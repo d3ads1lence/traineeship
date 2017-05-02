@@ -5,9 +5,9 @@ all: hello
 clean:
 	rm -f *.o *.so *.a binary
 
-libs: libhello.so libgoodbye.a
+libs: libhello.a libgoodbye.a
 
-libhello.so: libhello.o
+libhello.a: libhello.o
 	ar cr libhello.a libhello.o
 
 libgoodbye.a: libgoodbye.o
