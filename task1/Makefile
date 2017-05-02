@@ -8,13 +8,13 @@ clean:
 libs: libhello.so libgoodbye.a
 
 libhello.so: libhello.o
-	gcc -shared -o libhello.so libhello.o
+	ar cr libhello.a libhello.o
 
 libgoodbye.a: libgoodbye.o
 	ar cr libgoodbye.a libgoodbye.o
 
 libhello.o: libhello.c
-	gcc -c -fPIC libhello.c
+	gcc -c libhello.c
 
 libgoodbye.o: libgoodbye.c
 	gcc -c libgoodbye.c
@@ -23,5 +23,5 @@ hello.o: hello.c
 	gcc -c hello.c
 
 hello: hello.o libhello.so libgoodbye.a
-	gcc -o hello hello.o -L. -lhello -Wl,-rpath,. -L. -lgoodbye 
+	gcc -o hello hello.o -L. -lhello -L. -lgoodbye 
 	
