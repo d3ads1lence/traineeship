@@ -6,4 +6,11 @@ echo -n $temp
 }
 
 read line < "config.ini"
+if [ ! -z "$line" ];
+then 
+echo "Interval: $line"
+else 
+echo "Config file is empty"
+exit
+fi
 while true; do get_temp; sleep $line; done;
