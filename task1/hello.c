@@ -1,10 +1,12 @@
+
 /* main.c */
+#include <stdio.h>
 #include "world.h"
 
 int main(void)
 {
-    hello_world();
-    goodbye_world();
+    printf("%s", get_hello());
+    printf("%s", get_goodbye()); 
     
     return 0;
 }
