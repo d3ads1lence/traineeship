@@ -1,8 +1,8 @@
 /* hello.c */
-#include <stdio.h>
+
 #include "world.h"
 
-void hello_world(void)
+char *get_hello(void)
 {
-    printf("Hello World\n");
+    return "Hello World\n";
 }

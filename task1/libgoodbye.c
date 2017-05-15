@@ -1,8 +1,8 @@
 /* goodbye.c */
-#include <stdio.h>
+
 #include "world.h"
 
-void goodbye_world (void)
+char *get_goodbye (void)
 {
-        printf("Goodbye World\n");
+        return "Goodbye World\n";
 }
