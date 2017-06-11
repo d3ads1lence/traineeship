@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <pthread.h>
+#include <signal.h>
 
 sem_t *sem;
 key_t key = 1000;
@@ -21,6 +22,7 @@ void pipe_writer (FILE* stream);
 void pipe_reader(FILE* stream);
 void *Thread1(void *arg);
 void *Thread2(void *arg);
+void handler(int signal_number);
 
 int main() {
 	int fds[2];
@@ -69,6 +71,10 @@ int main() {
 		/********** Process B **********/
 
 		FILE *stream;
+		struct sigaction sa;
+		memset(&sa, 0, sizeof(sa));
+ 		sa.sa_handler = &handler;
+ 		sigaction(SIGUSR1, &sa, NULL);
 		close(fds[1]);
 		stream = fdopen(fds[0], "r");
 		pipe_reader(stream);
@@ -144,6 +150,8 @@ void *Thread1(void *arg)
 			if (sem_wait(sem) == 0){	
 			memcpy(readed_number, shared_memory_c, sizeof(int));
 			printf("Readed from shared memory number: %d\n", *readed_number);
+			if (*readed_number > 100) 
+				kill(getppid(), SIGUSR1);
 		}
 	}
 }
@@ -163,3 +171,7 @@ void *Thread2(void *arg)
 	}
 }
 
+void handler(int signal_number) 
+{
+	printf("signal received\n");
+}
