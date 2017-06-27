@@ -12,10 +12,10 @@ int main (void)
 	int socket_fd, client_socket_fd, client_adr_len, read_size;
 	struct sockaddr_in server, client;
 	char client_message[2000];
-	
+
 	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socket_fd < 0) 
-    	perror("ERROR opening socket");
+	perror("ERROR opening socket");
     
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
