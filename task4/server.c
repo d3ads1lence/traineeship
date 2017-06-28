@@ -40,20 +40,20 @@ int main (void)
 		printf("Client connected\n");
 	}
 
-    while((read_size = recv(client_socket_fd , client_message , 2000 , 0)) > 0 )
+    while(1)
     {
-    	printf("%s", client_message);
+    	if(read_size = recv(client_socket_fd , client_message , 2000 , 0) > 0){
+    		printf("Received message: ");
+    		printf("%s", client_message);
+    		memset(client_message, 0x00, 2000);
+    	}
+    	if(read_size == 0){
+			printf("Client disconnected\n");
+			break;
+		}else if(read_size == -1){
+			perror("ERROR recv failed");
+		}
     }
-
-    if(read_size == 0)
-    {
-		printf("Client disconnected\n");
-    }
-    else if(read_size == -1)
-    {
-		perror("ERROR recv failed");
-    }
-     
     return 0;
 }
 

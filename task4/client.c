@@ -27,17 +27,19 @@ int main (int argc, char* const argv[])
 		return 1;
 	}
 	
-	printf("Connected...\n");
+	printf("Connected.\n");
 	
 	while(1){
-		printf("Enter message: ");
-		scanf("%s", message);
-		
-        if( send(socket_fd , message , strlen(message) , 0) < 0)
-        {
-            perror("ERROR Send filed\n");
-            return 1;
-        }
+		memset(message, 0x00, 1000);
+		while (1){
+			printf("You: ");
+			if (fgets(message, 1000, stdin) != NULL){
+				if(send(socket_fd, message, strlen(message), 0) < 0){
+            	perror("ERROR Send filed\n");
+            	return 1;
+        		}
+			}
+		}
 	}
 	close(socket_fd);
 	return 0;
