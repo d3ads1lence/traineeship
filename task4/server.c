@@ -5,7 +5,11 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 #include "settings.h"
+
+static void child_process(int sock);
+static void *child_thread(void *arg);
 
 typedef enum {
 	SERVER_NOT_DEFINED,
@@ -15,10 +19,10 @@ typedef enum {
 
 int main (int argc, char *argv[])
 {
-	int socket_fd, client_socket_fd, client_adr_len, read_size;
+	int socket_fd, client_socket_fd, client_adr_len;
 	struct sockaddr_in server, client;
-	char client_message[2000];
 	server_t type_of_server;
+	pid_t pid;
 
 	if (argc == 2){
 		if (strcmp(argv[1], "-process") == 0) {
@@ -27,11 +31,11 @@ int main (int argc, char *argv[])
 			type_of_server = SERVER_B;
 		} else {
 			printf("You can only use -process or -pthreads flags\n");
-			return 1;
+			exit(1);
 		}
 	} else {
 		printf("Invalid number of arguments\n");
-		return 1;
+		exit(1);
 	}
 
 	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -44,37 +48,94 @@ int main (int argc, char *argv[])
     
     if(bind(socket_fd,(struct sockaddr *)&server , sizeof(server)) < 0)
     {
-        perror("ERROR bind failed");
-        return 1;
+		perror("ERROR bind failed");
+		exit(1);
     }
     listen(socket_fd, 128);
     printf("Wainting connections.\n");
 
     client_adr_len = sizeof(struct sockaddr_in);
 
-	client_socket_fd = accept(socket_fd, (struct sockaddr *)&client, 
-										(socklen_t*)&client_adr_len);
-	if (client_socket_fd < 0){
-		perror("ERROR accept failed");
-        return 1;
-	} else {
-		printf("Client connected\n");
-	}
-
-    while(1)
-    {
-    	if (read_size = recv(client_socket_fd , client_message , 2000 , 0) > 0){
-    		printf("Received message: ");
-    		printf("%s", client_message);
-    		memset(client_message, 0x00, 2000);
-    	}
-    	if (read_size == 0){
-			printf("Client disconnected\n");
-			break;
-		} else if (read_size == -1){
-			perror("ERROR recv failed");
+    while(1) {
+    	client_socket_fd = accept(socket_fd, (struct sockaddr *)&client, 
+											(socklen_t*)&client_adr_len);
+		if (client_socket_fd < 0){
+			perror("ERROR accept failed");
+			exit(1);
+		} else {
+			printf("Client connected\n");
+		}
+		if (type_of_server == SERVER_A) {
+			pid = fork();
+			if (pid == -1) {
+				perror("ERROR can't create child process\n");
+				exit(1);
+			} else if (pid == 0) {
+				close(socket_fd);
+				child_process(client_socket_fd);
+				exit(0);
+			} else {
+				close(client_socket_fd);
+			}
+		} else if (type_of_server == SERVER_B) {
+			pthread_t thread_client;
+			if(pthread_create(&thread_client, NULL, child_thread, 
+											(void* )&client_socket_fd)) {
+				perror("ERROR can't create thread\n");
+			}
+		} else {
+			printf ("Unknown type of server\n");
+			exit(1);
 		}
     }
     return 0;
 }
 
+static void child_process(int sock) 
+{
+	int read_size = 0;
+	char client_message[2000];
+
+	memset(client_message, 0x00, 2000);
+
+	printf("Hello, I`m child process!\n");
+
+	while(1) {
+		if (read_size = recv(sock , client_message , 2000 , 0) > 0){
+			printf("Received message: ");
+			printf("%s", client_message);
+			memset(client_message, 0x00, 2000);
+		}
+		if (read_size == 0){
+			printf("Client disconnected\n");
+			break;
+		} else if (read_size == -1){
+			perror("ERROR recv failed");
+		}
+	}
+}
+
+static void *child_thread(void *arg)
+{
+	int sock = *(int *)arg;
+	int read_size = 0;
+	char client_message[2000];
+
+	memset(client_message, 0x00, 2000);
+
+	printf("Hello, I`m thread!\n");
+
+	while(1) {
+		if (read_size = recv(sock , client_message , 2000 , 0) > 0){
+			printf("Received message: ");
+			printf("%s", client_message);
+			memset(client_message, 0x00, 2000);
+		}
+		if (read_size == 0){
+			printf("Client disconnected\n");
+			break;
+		} else if (read_size == -1){
+			perror("ERROR recv failed");
+		}
+	}
+}
