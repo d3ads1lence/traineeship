@@ -7,21 +7,42 @@
 #include <arpa/inet.h>
 #include "settings.h"
 
-int main (void)
+typedef enum {
+	SERVER_NOT_DEFINED,
+	SERVER_A,
+	SERVER_B,
+}server_t;
+
+int main (int argc, char *argv[])
 {
 	int socket_fd, client_socket_fd, client_adr_len, read_size;
 	struct sockaddr_in server, client;
 	char client_message[2000];
+	server_t type_of_server;
+
+	if (argc == 2){
+		if (strcmp(argv[1], "-process") == 0) {
+			type_of_server = SERVER_A;
+		} else if (strcmp(argv[1], "-pthreads") == 0) {
+			type_of_server = SERVER_B;
+		} else {
+			printf("You can only use -process or -pthreads flags\n");
+			return 1;
+		}
+	} else {
+		printf("Invalid number of arguments\n");
+		return 1;
+	}
 
 	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socket_fd < 0) 
-	perror("ERROR opening socket");
+		perror("ERROR opening socket");
     
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(PORT);
     
-    if( bind(socket_fd,(struct sockaddr *)&server , sizeof(server)) < 0)
+    if(bind(socket_fd,(struct sockaddr *)&server , sizeof(server)) < 0)
     {
         perror("ERROR bind failed");
         return 1;
@@ -42,15 +63,15 @@ int main (void)
 
     while(1)
     {
-    	if(read_size = recv(client_socket_fd , client_message , 2000 , 0) > 0){
+    	if (read_size = recv(client_socket_fd , client_message , 2000 , 0) > 0){
     		printf("Received message: ");
     		printf("%s", client_message);
     		memset(client_message, 0x00, 2000);
     	}
-    	if(read_size == 0){
+    	if (read_size == 0){
 			printf("Client disconnected\n");
 			break;
-		}else if(read_size == -1){
+		} else if (read_size == -1){
 			perror("ERROR recv failed");
 		}
     }
