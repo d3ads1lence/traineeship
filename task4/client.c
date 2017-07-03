@@ -11,7 +11,7 @@ int main (int argc, char* const argv[])
 {
 	int socket_fd;
 	struct sockaddr_in client;
-	char message[1000];
+	char message[1000], received_msg[1000];
 	
 	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socket_fd == -1){
@@ -38,6 +38,12 @@ int main (int argc, char* const argv[])
             	perror("ERROR Send filed\n");
             	return 1;
         		}
+			}
+			int readed_data = recv(socket_fd, received_msg, 1000, 0);
+			if (readed_data < 0) {
+				printf("error\n");
+			} else if (readed_data > 0) {
+				printf("%s", received_msg);
 			}
 		}
 	}
