@@ -1,27 +1,25 @@
 .PHONY: all clean libs
 
+TARGET = hello
+LIB_HELLO = libhello
+LIB_BYE = libgoodbye
+
 all: hello
 
 clean:
-	rm -f *.o *.so *.a binary
+	rm -f *.o *.so *.a $(TARGET)
 
-libs: libhello.so libgoodbye.a
+libs: $(LIB_HELLO) $(LIB_BYE)
 
-libhello.so: libhello.o
-	gcc -shared -o libhello.so libhello.o
+$(LIB_HELLO):	$(LIB_HELLO).c world.h
+				gcc -c -fPIC -shared $(LIB_HELLO).c -o $(LIB_HELLO).o
+				gcc -shared -o $(LIB_HELLO).so $(LIB_HELLO).o
 
-libgoodbye.a: libgoodbye.o
-	ar cr libgoodbye.a libgoodbye.o
+$(LIB_BYE): 	$(LIB_BYE).c world.h
+				gcc -c $(LIB_BYE).c -o $(LIB_BYE).o
+				ar cr $(LIB_BYE).a $(LIB_BYE).o
 
-libhello.o: libhello.c
-	gcc -c -fPIC libhello.c
-
-libgoodbye.o: libgoodbye.c
-	gcc -c libgoodbye.c
-	
-hello.o: hello.c
-	gcc -c hello.c
-
-hello: hello.o libhello.so libgoodbye.a
-	gcc -o hello hello.o -L. -lhello -Wl,-rpath,. -L. -lgoodbye 
+$(TARGET): 		$(TARGET).c $(LIB_HELLO) $(LIB_BYE)
+				gcc -c $(TARGET).c
+				gcc -o $(TARGET) $(TARGET).o -L. -lhello -Wl,-rpath,. -L. -lgoodbye 
 	
