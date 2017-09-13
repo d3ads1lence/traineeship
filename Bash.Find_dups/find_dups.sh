@@ -1,5 +1,6 @@
 #!/bin/bash
 
+dir=$1
 rm_dups="$1"/rm_dups.sh
 
 find_by_name()
@@ -23,13 +24,28 @@ done
 rm ${temp_file}
 }
 
+find_by_cont()
+{
+echo "#!/bin/bash" > "$rm_dups"
+find $1 -type f -print0 | xargs -0 md5sum | sort | uniq -w32 -D | while read md5 path; do
+if [ "$previous" = "$md5" ]
+	then
+	printf "%s" "#rm " >> "$rm_dups"
+	printf "%q\n" "$path" >> "$rm_dups"
+	else
+	echo "#----------$md5----------" >> "$rm_dups"
+fi
+previous=$md5
+done
+}
+
 if [ -n "$1" ]
 	then 
 	if [ -n "$2" ]
 		then
 		case $2 in
 			"name") find_by_name $1;;
-			"cont") echo "cont";;
+			"cont") find_by_cont $1;;
 			*     ) echo "Parametr should be \"name\" or \"cont\"";;
 		esac
 	else
@@ -38,6 +54,3 @@ if [ -n "$1" ]
 else
 	echo "Enter the path"
 fi 
-
-
-
