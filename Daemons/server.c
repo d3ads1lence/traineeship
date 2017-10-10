@@ -2,18 +2,18 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include "data.h"
 
+
 int main(void)
 {
-	int msqid;
-	int msgflg = IPC_CREAT | 0666;
-	message_t msg;
-	size_t ms_length;
+    int msqid;
+    int msgflg = IPC_CREAT | 0666;
 
-	printf("Calling msgget with key %d\n", key);
+    message_t msg;
+
+    printf("Calling msgget with key %d\n", key);
 
 	if ((msqid = msgget(key, msgflg)) < 0) {
 		perror("msgget");
@@ -22,27 +22,20 @@ int main(void)
 		printf("msgget: msgget succeeded: msqid = %d\n", msqid);	
 	}
 
-	// msg.ms_type = DIGIT;
-	// msg.ms_body.dig = 777;
-	// ms_length = sizeof(msg);
-
-	// if (msgsnd(msqid, &msg, ms_length, IPC_NOWAIT) < 0) {
-	// 	perror("msgsnd");
-	// 	exit(1);
-	// } else {
-	// 	printf("Message sent, type: %d\n", msg.ms_type);
-	// }
-
-	msg.ms_type = ARRAY;
-	(void) strcpy(msg.ms_body.arr, "test");
-	ms_length = sizeof(msg);
-
-	if (msgsnd(msqid, &msg, ms_length, IPC_NOWAIT) < 0) {
-		perror("msgsnd");
-		exit(1);
-	} else {
-		printf("Message sent, type: %d\n", msg.ms_type);
+	while(1){
+	    if (msgrcv(msqid, &msg, sizeof(message_t), 0, 0) < 0) {
+		    perror("msgrcv");
+		    exit(1);
+		} else {
+		    if (msg.ms_type == DIGIT){
+		        printf("Received digit: %d\n", msg.ms_body.dig);
+		    }
+		    if (msg.ms_type == ARRAY){
+		        printf("Received digit: %s\n", msg.ms_body.arr);
+		    }
+		}
 	}
 
-	exit(0);
+
+    exit(0);
 }
