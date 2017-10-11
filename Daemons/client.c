@@ -4,13 +4,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "data.h"
 
 int main(void)
 {
-	int msqid;
+	int msqid = 0;
 	message_t msg;
-	size_t ms_length;
+	size_t ms_length = 0;
+    int mode = 0;
 
 	printf("Calling msgget with key %d\n", key);
 
@@ -19,18 +21,57 @@ int main(void)
         exit(1);
     }
 
-    while (1){
-        int digit = 0;
-        scanf("%i", &digit);
-        msg.ms_type = DIGIT;
-        msg.ms_body.dig = digit;
-        ms_length = sizeof(msg);
+    printf("Select data type: ");
+    while (scanf("%d", &mode) == 1){
+        switch (mode){
+            case DIGIT:
+            {
+                printf("Enter the integer variable\n");
+                scanf("%i", &msg.ms_body.dig);
+                msg.ms_type = DIGIT;
+                ms_length = sizeof(sizeof(msg.ms_body));
+                if (msgsnd(msqid, (void *) &msg, ms_length, 0) < 0) {
+                    perror("msgsnd");
+                    exit(EXIT_FAILURE);
+                } else {
+                    printf("Select data type: ");
+                }
 
-        if (msgsnd(msqid, &msg, ms_length, IPC_NOWAIT) < 0) {
-         perror("msgsnd");
-         exit(1);
-        } else {
-         printf("Message sent, type: %d\n", msg.ms_type);
+            }
+            break;
+            case ARRAY:
+            {
+                printf("Enter the char array\n");
+                scanf("%5s", msg.ms_body.arr);
+                msg.ms_type = ARRAY;
+                ms_length = sizeof(sizeof(msg.ms_body));
+                if (msgsnd(msqid, (void *) &msg, ms_length, 0) < 0) {
+                    perror("msgsnd");
+                    exit(EXIT_FAILURE);
+                } else {
+                    printf("String: %s\n", msg.ms_body.arr);
+                    printf("Select data type: ");
+                }
+            }
+            break;
+            case STRUCT:
+            {
+                printf("Enter 3 integer variables\n");
+                scanf("%i %i %i", &msg.ms_body.my_struct.a, 
+                        &msg.ms_body.my_struct.b, &msg.ms_body.my_struct.c);
+                msg.ms_type = STRUCT;
+                ms_length = sizeof(sizeof(msg.ms_body));
+                if (msgsnd(msqid, (void *) &msg, ms_length, 0) < 0) {
+                    perror("msgsnd");
+                    exit(EXIT_FAILURE);
+                } else {
+                    printf("Select data type: ");
+                }
+            }
+            break;
+            default:
+                printf("Wrong mode\n");
+            break;
         }
     }
 

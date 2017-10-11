@@ -3,6 +3,7 @@
 #include <sys/msg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "data.h"
 
 
@@ -23,16 +24,30 @@ int main(void)
 	}
 
 	while(1){
-	    if (msgrcv(msqid, &msg, sizeof(message_t), 0, 0) < 0) {
-		    perror("msgrcv");
-		    exit(1);
+	    if (msgrcv(msqid, (void *) &msg, sizeof(msg.ms_body), 0, 
+	    									MSG_NOERROR | IPC_NOWAIT) < 0) {
+			if (errno != ENOMSG) {
+			       perror("msgrcv");
+			       exit(EXIT_FAILURE);
+			   }
 		} else {
-		    if (msg.ms_type == DIGIT){
-		        printf("Received digit: %d\n", msg.ms_body.dig);
-		    }
-		    if (msg.ms_type == ARRAY){
-		        printf("Received digit: %s\n", msg.ms_body.arr);
-		    }
+			switch(msg.ms_type){
+					case DIGIT:
+						printf("Received digit: %i\n", msg.ms_body.dig);
+					break;
+					case ARRAY:
+						printf("Received char array: %s\n", msg.ms_body.arr);
+					break;
+					case STRUCT:
+						printf("Received struct: a: %i, b: %i, c: %i", 
+												msg.ms_body.my_struct.a, 
+												msg.ms_body.my_struct.b, 
+												msg.ms_body.my_struct.c);
+					break;
+					default:
+						printf("Unknown data type.");
+					break;
+			}
 		}
 	}
 
