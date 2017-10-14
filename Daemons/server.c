@@ -1,36 +1,36 @@
 #include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
+#include <fcntl.h>           /* For O_* constants */
+#include <sys/stat.h>        /* For mode constants */
+#include <mqueue.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "data.h"
 
+#define MY_MQ_NAME "/my_mq"
+
+static struct mq_attr my_mq_attr;
+static mqd_t my_mq;
+
 
 int main(void)
 {
-    int msqid;
-    int msgflg = IPC_CREAT | 0666;
+	message_t msg;
+	
+    my_mq_attr.mq_maxmsg = 10;
+    my_mq_attr.mq_msgsize = sizeof(msg);
 
-    message_t msg;
-
-    printf("Calling msgget with key %d\n", key);
-
-	if ((msqid = msgget(key, msgflg)) < 0) {
-		perror("msgget");
+    my_mq = mq_open(MY_MQ_NAME, \
+                    O_CREAT | O_RDONLY | O_NONBLOCK, \
+                    0666, \
+                    &my_mq_attr);
+    if (my_mq < 0){
+    	perror("mq_open");
 		exit(1);
-	} else {
-		printf("msgget: msgget succeeded: msqid = %d\n", msqid);	
-	}
+    }
 
 	while(1){
-	    if (msgrcv(msqid, (void *) &msg, sizeof(msg.ms_body), 0, 
-	    									MSG_NOERROR | IPC_NOWAIT) < 0) {
-			if (errno != ENOMSG) {
-			       perror("msgrcv");
-			       exit(EXIT_FAILURE);
-			   }
-		} else {
+	    if (mq_receive(my_mq, (char*)&msg, sizeof(msg), NULL) > 0){
 			switch(msg.ms_type){
 					case DIGIT:
 						printf("Received digit: %i\n", msg.ms_body.dig);

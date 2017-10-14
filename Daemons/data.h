@@ -17,9 +17,9 @@ union data {
 };
 
 typedef enum {
-	DIGIT = 1,
-	ARRAY,
-	STRUCT
+	DIGIT  = 1,
+	ARRAY  = 2,
+	STRUCT = 3,
 } msg_type_t;
 
 typedef struct{
