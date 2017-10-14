@@ -2,7 +2,6 @@
 #define DATA_H_
 
 #define ARR_SIZE 5
-const key_t key = 10;
 
 struct mystruct{ 
 	int a;

@@ -44,9 +44,9 @@ int main(void)
                 msg.ms_type = ARRAY;
             break;
             case STRUCT:
-                printf("Enter 3 integer variables\n");
-                scanf("%i %i %i", &msg.ms_body.my_struct.a, 
-                        &msg.ms_body.my_struct.b, &msg.ms_body.my_struct.c);
+                do{
+                    printf("Enter 3 integer variables\n");
+                }while(scanf("%i %i %i", &msg.ms_body.my_struct.a, &msg.ms_body.my_struct.b, &msg.ms_body.my_struct.c) !=3);
                 msg.ms_type = STRUCT;
             break;
             default:
