@@ -3,7 +3,7 @@
 all: server client
 
 clean:
-	rm -f *.o server client
+	rm -f *.o *.txt server client
 
 server.o: server.c
 	gcc -c server.c

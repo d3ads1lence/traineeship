@@ -13,7 +13,7 @@
 static struct mq_attr my_mq_attr;
 static mqd_t my_mq;
 
-int main(void)
+int main(int argc, char *argv[])
 {
     int mode = 0;
 
