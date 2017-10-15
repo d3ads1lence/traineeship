@@ -105,6 +105,9 @@ int main(int argc, char *argv[])
 	fclose(file_int);
 	fclose(file_array);
 	fclose(file_struct);
+	if (daemon){
+		closelog();
+	}
 
     exit(0);
 }
