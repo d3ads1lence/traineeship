@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     my_mq_attr.mq_msgsize = sizeof(msg);
 
 	my_mq = mq_open(MY_MQ_NAME, \
-					O_CREAT | O_RDONLY | O_NONBLOCK, \
+					O_CREAT | O_RDONLY, \
 					0666, \
 					&my_mq_attr);
     if (my_mq < 0){
