@@ -14,10 +14,13 @@
 #include "data.h"
 
 
-#define MY_MQ_NAME "/my_mq"
+#define MY_MQ_NAME 	"/my_mq"
+#define LOCKFILE 	"/var/run/server.pid"
+#define LOCKMODE 	(S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
 
 static void daemonize(void);
-
+static int lockfile(int fd);
+static int already_running(void);
 
 int main(int argc, char *argv[])
 {
@@ -55,6 +58,10 @@ int main(int argc, char *argv[])
 
 	if (daemon){
 		daemonize();
+		if (already_running()){
+			syslog (LOG_ERR, "Daemon is already started.");
+			exit(1);
+		}
 		syslog (LOG_NOTICE, "Daemon started.");
 	}
 	my_mq_attr.mq_maxmsg = 10;
@@ -165,3 +172,40 @@ static void daemonize(void)
     openlog ("my_daemon", LOG_PID, LOG_DAEMON);
 }
 
+static int lockfile(int fd)
+{
+	struct flock fl;
+
+	fl.l_type = F_WRLCK;
+	fl.l_start = 0;
+	fl.l_whence = SEEK_SET;
+	fl.l_len = 0;
+
+	return(fcntl(fd, F_SETLK, &fl));
+}
+
+static int already_running(void)
+{
+	int fd;
+	char buf[16];
+
+	fd = open(LOCKFILE, O_RDWR|O_CREAT, LOCKMODE);
+	if (fd < 0) {
+		syslog(LOG_ERR, "не воз­мож­но от­крыть %s: %s",
+		LOCKFILE, strerror(errno));
+		exit(1);
+	}
+	if (lockfile(fd) < 0) {
+		if (errno == EACCES || errno == EAGAIN) {
+			close(fd);
+			return(1);
+		}
+		syslog(LOG_ERR, "не­воз­мож­но ус­та­но­вить бло­ки­ров­ку на %s: %s",
+		LOCKFILE, strerror(errno));
+		exit(1);
+	}
+	ftruncate(fd, 0);
+	sprintf(buf, "%ld", (long)getpid());
+	write(fd, buf, strlen(buf)+1);
+	return(0);
+}
